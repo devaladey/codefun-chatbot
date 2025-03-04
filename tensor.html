@@ -63,14 +63,25 @@
         const preview = document.getElementById("preview");
         const result = document.getElementById("result");
         
-        let modelLoaded = false;
         let model;
-        async function loadModel() {
-            model = await mobilenet.load();
-            modelLoaded = true;
-            result.textContent = "Model loaded! Please upload an image.";
+        let modelLoaded = false;
+
+        async function loadModel(retry = 3) {
+            try {
+                model = await mobilenet.load();
+                modelLoaded = true;
+                result.textContent = "Model loaded! Please upload an image.";
+            } catch (error) {
+                console.error("Model failed to load:", error);
+                if (retry > 0) {
+                    setTimeout(() => loadModel(retry - 1), 2000);
+                } else {
+                    result.textContent = "❌ Model failed to load. Check your network.";
+                }
+            }
         }
-        loadModel();
+
+        setTimeout(loadModel, 100);
 
         imageUpload.addEventListener("change", async (event) => {
             if (!modelLoaded) {
