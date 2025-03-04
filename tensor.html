@@ -76,12 +76,21 @@
                 if (retry > 0) {
                     setTimeout(() => loadModel(retry - 1), 2000);
                 } else {
-                    result.textContent = "❌ Model failed to load. Check your network.";
+                    result.textContent = "❌ Model failed to load. Check your network and CORS settings.";
                 }
             }
         }
 
-        setTimeout(loadModel, 100);
+        function handleCORS() {
+            const script = document.createElement("script");
+            script.src = "https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet";
+            script.crossOrigin = "anonymous";
+            script.onload = () => loadModel();
+            script.onerror = () => result.textContent = "❌ Model failed due to CORS issues.";
+            document.head.appendChild(script);
+        }
+
+        setTimeout(handleCORS, 100);
 
         imageUpload.addEventListener("change", async (event) => {
             if (!modelLoaded) {
