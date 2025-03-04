@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat or Dog Classifier</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: auto;
+        }
+        h1 {
+            color: #333;
+        }
+        #imageUpload {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: white;
+            cursor: pointer;
+        }
+        #preview {
+            width: 100%;
+            height: auto;
+            max-height: 300px;
+            object-fit: cover;
+            display: block;
+            margin: 20px auto;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+        }
+        #result {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 15px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cat or Dog Classifier</h1>
+        <input type="file" id="imageUpload" accept="image/*">
+        <img id="preview" src="" alt="Image Preview">
+        <p id="result"></p>
+    </div>
+    
+    <script>
+        const imageUpload = document.getElementById("imageUpload");
+        const preview = document.getElementById("preview");
+        const result = document.getElementById("result");
+        
+        let model;
+        async function loadModel() {
+            model = await mobilenet.load();
+        }
+        loadModel();
+
+        imageUpload.addEventListener("change", async (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+                classifyImage();
+            }
+        });
+
+        async function classifyImage() {
+            if (!model) {
+                result.textContent = "Loading model, please wait...";
+                return;
+            }
+            const predictions = await model.classify(preview);
+            const label = predictions[0].className.toLowerCase();
+            
+            if (label.includes("cat")) {
+                result.textContent = "🐱 This is a Cat!";
+                result.style.color = "green";
+            } else if (label.includes("dog")) {
+                result.textContent = "🐶 This is a Dog!";
+                result.style.color = "blue";
+            } else {
+                result.textContent = "❌ Error: Not a Cat or Dog!";
+                result.style.color = "red";
+            }
+        }
+    </script>
+</body>
+</html>
