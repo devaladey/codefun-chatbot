@@ -55,7 +55,7 @@
         <h1>Cat or Dog Classifier</h1>
         <input type="file" id="imageUpload" accept="image/*">
         <img id="preview" src="" alt="Image Preview">
-        <p id="result"></p>
+        <p id="result">Loading model, please wait...</p>
     </div>
     
     <script>
@@ -63,13 +63,21 @@
         const preview = document.getElementById("preview");
         const result = document.getElementById("result");
         
+        let modelLoaded = false;
         let model;
         async function loadModel() {
             model = await mobilenet.load();
+            modelLoaded = true;
+            result.textContent = "Model loaded! Please upload an image.";
         }
         loadModel();
 
         imageUpload.addEventListener("change", async (event) => {
+            if (!modelLoaded) {
+                result.textContent = "Model is still loading, please wait...";
+                return;
+            }
+
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
@@ -84,8 +92,8 @@
         });
 
         async function classifyImage() {
-            if (!model) {
-                result.textContent = "Loading model, please wait...";
+            if (!modelLoaded) {
+                result.textContent = "Model is still loading, please wait...";
                 return;
             }
             const predictions = await model.classify(preview);
